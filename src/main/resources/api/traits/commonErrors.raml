@@ -1,0 +1,21 @@
+#%RAML 1.0 Trait
+
+responses:
+  400:
+    body:
+      application/json:
+        type: errorResponse
+        example: | 
+          {
+            "message": "Bad request!",
+            "correlationId": "bad0e5b0-9191-11eb-a0b3-36548d51aeee"
+          }          
+  500:
+    body:
+      application/json:
+        type: errorResponse
+        example: |
+          {
+            "message": "Server error!",
+            "correlationId": "bad0e5b0-9191-11eb-a0b3-36548d51aeee"
+          }    

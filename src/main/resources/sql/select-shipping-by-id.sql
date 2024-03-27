@@ -1,0 +1,1 @@
+SELECT * FROM shippings WHERE id = :id;

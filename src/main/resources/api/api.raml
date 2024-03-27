@@ -1,0 +1,127 @@
+#%RAML 1.0
+title: shippings-system-api
+version: v1.0
+
+securitySchemes:
+    basicAuth:
+        description: Need to provide Client ID and Client Secret obtained from the Anypoint Platform 
+        type: Basic Authentication
+
+types:
+    userAddress: !include dataTypes/userAddress.raml
+    shipping: !include dataTypes/shipping.raml
+    errorResponse: !include dataTypes/erorrResponse.raml
+    successResponse: !include dataTypes/successResponse.raml
+
+traits:
+  commonErrors: !include traits/commonErrors.raml
+  notFoundError: !include traits/notFoundError.raml
+  
+
+securedBy: [basicAuth]
+/shippings:
+    description: |
+        Working with shippings:
+        * Retrieving all shippings
+        * Creating shippings
+    get:
+        displayName: Get shippings
+        description: |
+            Retrieve all shippings.
+        is: [commonErrors]
+        queryParameters:
+            name:
+                displayName: The user name
+                minLength: 0
+                maxLength: 255
+                required: false
+                example: "Jerry"
+            match:
+                displayName: The user name matching rule
+                description: |
+                    The user name matching rule
+                type: string
+                enum: [like, equals]
+                default: equals
+                required: false
+                example: "equals"
+        responses:
+            200:
+                body:
+                    application/json:
+                        type: shipping[]
+                        example: !include examples/getShippings.raml
+    
+    post:
+        displayName: Create shipping
+        description: |
+            Create a new shipping
+        is: [commonErrors]
+        body:
+            application/json:
+                type: shipping
+                example: !include examples/postShipping.raml
+        responses:
+            201:
+                body:
+                    application/json:
+                        type: successResponse
+                        example: |
+                            {
+                                "status": "Shipping successfully created",
+                                "shippingId": "100"
+                            }
+    
+    /{id}:
+        description: |
+            Working with shippings:
+            * Retrieving specific shipping
+            * Updating specific shipping
+            * Deleting specific shipping
+        uriParameters:
+            id:
+                description: Represents the shipping unique id
+                type: integer
+                example: 100
+        get:
+            displayName: Get shipping by id
+            description: Get shipping specified by it's unique ID
+            is: [commonErrors, notFoundError]
+            responses:
+                200:
+                    body:
+                        application/json:
+                            type: shipping
+                            example: !include examples/getShippingById.raml
+        put:
+            displayName: Update shipping by id
+            description: Update shipping specified by it's unique ID
+            is: [commonErrors, notFoundError]
+            body:
+                application/json:
+                    type: shipping
+                    example: !include examples/putShippingById.raml
+            responses:
+                200:
+                    body:
+                        application/json:
+                            type: successResponse
+                            example: |
+                                {
+                                    "status": "Shipping successfully updated",
+                                    "shippingId": "100"
+                                }
+        delete:
+            displayName: Delete shipping by id
+            description: Delete shipping specified by it's unique ID
+            is: [commonErrors, notFoundError]
+            responses:
+                200:
+                    body:
+                        application/json:
+                            type: successResponse
+                            example: |
+                                {
+                                    "status": "Shipping successfully deleted",
+                                    "shippingId": "100"
+                                }

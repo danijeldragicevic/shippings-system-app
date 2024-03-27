@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	
+	<!-- Get all shippings from the database. -->
+	<sub-flow name="getShippings" doc:id="1d30b5d7-cb98-477c-93db-39bed45e8c32" >
+		<ee:transform doc:name="Build WHERE clause" doc:id="ed2832e5-75f4-4ed6-a334-49a30d5cad1c" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="whereClause" resource="dw/build-where-clause.dwl"/>
+			</ee:variables>
+		</ee:transform>
+		<db:select doc:name="Select all shippings" doc:id="d7bc3100-18e0-44eb-bd55-327d96652502" config-ref="SQL_Database_Config">
+			<db:sql ><![CDATA[#["SELECT * FROM shippings" ++ vars.whereClause ++ ";"]]]></db:sql>
+		</db:select>
+		<choice doc:name="Are the shippings exists?" doc:id="bc0fb8dc-a940-4e60-b3ad-41ffabedbd84" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="DB shippings to sAPI shippings" doc:id="0a84f5fc-d786-446a-9b6c-55f22cb30585">
+			<ee:message>
+				<ee:set-payload resource="dw/db-shippings-to-sapi-shippings.dwl" />
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Build successfull response with empty array" doc:id="84e64a00-663c-475a-9aa3-dd73a7886eac" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	
+	<!-- Create new shipping in the database. -->
+	<sub-flow name="createShipping" doc:id="a60e7e29-8477-44c2-a140-d2e59586ca3a">
+		<db:insert doc:name="Insert new shipping" doc:id="90cf50e3-54cd-48fa-b78b-0c0a1cfab70e" config-ref="SQL_Database_Config" autoGenerateKeys="true">
+			<db:sql><![CDATA[${file::sql/insert-new-shipping.sql}]]></db:sql>
+			<db:input-parameters><![CDATA[#[%dw 2.0 output application/java
+
+---
+{
+	// VALUES
+	createdDate				:now() as DateTime,
+    lastModifiedDate		:now() as DateTime,
+    
+	userId					:payload.shipTo.userId,
+    userName				:payload.shipTo.name,
+    userEmail				:payload.shipTo.email,
+    userPhone				:payload.shipTo.phone,
+    
+    billingStreet			:payload.billingAddress.street,
+    billingCity				:payload.billingAddress.city,
+    billingState			:payload.billingAddress.state,
+    billingPostalCode		:payload.billingAddress.postalCode,
+    billingCountry			:payload.billingAddress.country,
+    
+    shippingStreet			:payload.shippingAddress.street,
+    shippingCity			:payload.shippingAddress.city,
+    shippingState			:payload.shippingAddress.state,
+    shippingPostalCode		:payload.shippingAddress.postalCode,
+    shippingCountry			:payload.shippingAddress.country
+}]]]></db:input-parameters>
+		</db:insert>
+		<choice doc:name="Has the shipping been created?" doc:id="f2dd33f6-a969-4ace-a8f8-17a423626d81" >
+			<when expression="#[payload.affectedRows == 1]">
+				<ee:transform doc:name="Build successfullly created response">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+var shippingId = payload.generatedKeys[0] as String default "unknown"
+
+---
+{
+  status: "Shipping successfully created",
+  shippingId: shippingId
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</when>
+			<otherwise>
+				<raise-error doc:name="Throw SERVER_ERROR" doc:id="340f3e0c-e928-4db7-b462-8de6ef31b38a" type="APP:SERVER_ERROR" description="Shipping was not created. Please check the logs."/>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	
+	<!-- Get shipping by selected ID. -->
+	<sub-flow name="getShippingById" doc:id="799f7061-8e53-49ec-aff2-f05293726be0" >
+		<db:query-single doc:name="Select one shipping" doc:id="4b95705e-299c-4421-8a09-ace81fd9431e" config-ref="SQL_Database_Config">
+			<db:sql><![CDATA[${file::sql/select-shipping-by-id.sql}]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+				// WHERE
+				id: attributes.uriParams.id
+			}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Does shipping exists?" doc:id="9061ac5e-6ff2-4a5e-b241-23262e0f67bc" >
+			<when expression="#[not isEmpty(payload)]">
+				<ee:transform doc:name="DB shipping to sAPI shipping" doc:id="70d1c507-36a4-4e6b-8e6e-b3b9030724d6">
+					<ee:message>
+						<ee:set-payload resource="dw/db-shipping-to-sapi-shipping.dwl" />
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<raise-error doc:name="Throw NOT_FOUND" doc:id="f29338b7-261b-407d-a30c-213bd16ac444" type="APP:NOT_FOUND" description="Shipping was not found!" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	
+	<!-- Update shipping by selected ID. -->
+	<sub-flow name="updateShippingById" doc:id="906a590e-6cb5-49d2-b45a-990cf7676339" >
+		<flow-ref doc:name="getShippingById" doc:id="362cd35c-82b3-4109-8352-fb057f326c61" name="getShippingById" target="requestedShipping"/>
+		<db:update doc:name="Update selected shipping" doc:id="9953aea0-b14a-44b1-ade8-3ba54b712f1b" config-ref="SQL_Database_Config">
+					<db:sql><![CDATA[${file::sql/update-shipping-by-id.sql}]]></db:sql>
+					<db:input-parameters><![CDATA[#[%dw 2.0 output application/java
+
+var shipping = vars.requestedShipping
+
+---
+{
+	//SET
+	lastModifiedDate		:now() as DateTime,
+    
+	userId					:payload.shipTo.userId,
+    userName				:payload.shipTo.name,
+    userEmail				:payload.shipTo.email,
+    userPhone				:payload.shipTo.phone,
+    
+    billingStreet			:payload.billingAddress.street,
+    billingCity				:payload.billingAddress.city,
+    billingState			:payload.billingAddress.state,
+    billingPostalCode		:payload.billingAddress.postalCode,
+    billingCountry			:payload.billingAddress.country,
+    
+    shippingStreet			:payload.shippingAddress.street,
+    shippingCity			:payload.shippingAddress.city,
+    shippingState			:payload.shippingAddress.state,
+    shippingPostalCode		:payload.shippingAddress.postalCode,
+    shippingCountry			:payload.shippingAddress.country,
+    
+    //WHERE
+    id						:shipping.id
+ }]]]></db:input-parameters>
+				</db:update>
+		<choice doc:name="Has the shipping been updated?" doc:id="bc6f914e-605c-4c55-8afc-f9a569ac7349">
+					<when expression="#[payload.affectedRows == 1]">
+						<ee:transform doc:name="Build successfully updated response" doc:id="6d429b8d-e694-44da-9bc1-1b94ec791195">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+var shippingId = vars.requestedShipping.id as String default "unknown"
+
+---
+{
+  status: "Shipping successfully updated",
+  shippingId: shippingId
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					</when>
+					<otherwise>
+						<raise-error doc:name="Throw SERVER_ERROR" doc:id="c90c3c0a-b6b2-4afd-8b2b-f6b7b0a67635" type="APP:SERVER_ERROR" description="Shipping was not updated. Please check the logs." />
+					</otherwise>
+				</choice>
+	</sub-flow>
+	
+	<!-- Delete shipping by selected ID. -->
+	<sub-flow name="deleteShippingById" doc:id="69f4491c-943b-4da1-8f9c-6104c1317f25" >
+		<flow-ref doc:name="getShippingById" doc:id="f1981ad2-c4ff-4a59-8471-7c4c4fb10048" name="getShippingById" target="requestedShipping"/>
+		<db:delete doc:name="Delete selected shipping" doc:id="53abf382-3a11-41ad-a4ff-d45abd71e1a4" config-ref="SQL_Database_Config">
+			<db:sql ><![CDATA[${file::sql/delete-shipping-by-id.sql}]]></db:sql>
+			<db:input-parameters ><![CDATA[#[%dw 2.0 output application/java
+
+var shipping = vars.requestedShipping
+
+---
+{
+	//WHERE
+    id: shipping.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<choice doc:name="Has the shipping been deleted?" doc:id="e4596639-8215-4ac2-a694-0091651b35cc" >
+			<when expression="#[payload == 1]">
+				<ee:transform doc:name="Build successfully deleted response" doc:id="5e6c48f4-08bd-4c87-8485-b0770a57a6ba">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+var shippingId = vars.requestedShipping.id as String default "unknown"
+
+---
+{
+  status: "Shipping successfully deleted",
+  shippingId: shippingId
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+			</when>
+			<otherwise >
+				<raise-error doc:name="SERVER_ERROR" doc:id="14329820-d2cb-4902-bf06-f6adde40a0b9" type="APP:SERVER_ERROR" description="Shipping was not deleted. Please check the logs." />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	
+</mule>
