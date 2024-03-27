@@ -15,7 +15,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 				<ee:set-variable variableName="whereClause" resource="dw/build-where-clause.dwl"/>
 			</ee:variables>
 		</ee:transform>
-		<db:select doc:name="Select all shippings" doc:id="d7bc3100-18e0-44eb-bd55-327d96652502" config-ref="SQL_Database_Config">
+		<db:select doc:name="Select all shippings" doc:id="d7bc3100-18e0-44eb-bd55-327d96652502" config-ref="${secure::db.config}">
 			<db:sql ><![CDATA[#["SELECT * FROM shippings" ++ vars.whereClause ++ ";"]]]></db:sql>
 		</db:select>
 		<choice doc:name="Are the shippings exists?" doc:id="bc0fb8dc-a940-4e60-b3ad-41ffabedbd84" >
@@ -41,15 +41,17 @@ output application/json
 	
 	<!-- Create new shipping in the database. -->
 	<sub-flow name="createShipping" doc:id="a60e7e29-8477-44c2-a140-d2e59586ca3a">
-		<db:insert doc:name="Insert new shipping" doc:id="90cf50e3-54cd-48fa-b78b-0c0a1cfab70e" config-ref="SQL_Database_Config" autoGenerateKeys="true">
+		<db:insert doc:name="Insert new shipping" doc:id="90cf50e3-54cd-48fa-b78b-0c0a1cfab70e" config-ref="${secure::db.config}" autoGenerateKeys="true">
 			<db:sql><![CDATA[${file::sql/insert-new-shipping.sql}]]></db:sql>
 			<db:input-parameters><![CDATA[#[%dw 2.0 output application/java
+
+type SqlDate = String{format: 'yyyy-MM-dd hh:mm:ss'} 
 
 ---
 {
 	// VALUES
-	createdDate				:now() as DateTime,
-    lastModifiedDate		:now() as DateTime,
+	createdDate				:now() as DateTime as SqlDate,
+    lastModifiedDate		:now() as DateTime as SqlDate,
     
 	userId					:payload.shipTo.userId,
     userName				:payload.shipTo.name,
@@ -94,7 +96,7 @@ var shippingId = payload.generatedKeys[0] as String default "unknown"
 	
 	<!-- Get shipping by selected ID. -->
 	<sub-flow name="getShippingById" doc:id="799f7061-8e53-49ec-aff2-f05293726be0" >
-		<db:query-single doc:name="Select one shipping" doc:id="4b95705e-299c-4421-8a09-ace81fd9431e" config-ref="SQL_Database_Config">
+		<db:query-single doc:name="Select one shipping" doc:id="4b95705e-299c-4421-8a09-ace81fd9431e" config-ref="${secure::db.config}">
 			<db:sql><![CDATA[${file::sql/select-shipping-by-id.sql}]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
 				// WHERE
@@ -118,16 +120,17 @@ var shippingId = payload.generatedKeys[0] as String default "unknown"
 	<!-- Update shipping by selected ID. -->
 	<sub-flow name="updateShippingById" doc:id="906a590e-6cb5-49d2-b45a-990cf7676339" >
 		<flow-ref doc:name="getShippingById" doc:id="362cd35c-82b3-4109-8352-fb057f326c61" name="getShippingById" target="requestedShipping"/>
-		<db:update doc:name="Update selected shipping" doc:id="9953aea0-b14a-44b1-ade8-3ba54b712f1b" config-ref="SQL_Database_Config">
+		<db:update doc:name="Update selected shipping" doc:id="9953aea0-b14a-44b1-ade8-3ba54b712f1b" config-ref="${secure::db.config}">
 					<db:sql><![CDATA[${file::sql/update-shipping-by-id.sql}]]></db:sql>
 					<db:input-parameters><![CDATA[#[%dw 2.0 output application/java
 
+type SqlDate = String{format: 'yyyy-MM-dd hh:mm:ss'} 
 var shipping = vars.requestedShipping
 
 ---
 {
 	//SET
-	lastModifiedDate		:now() as DateTime,
+	lastModifiedDate		:now() as DateTime as SqlDate,
     
 	userId					:payload.shipTo.userId,
     userName				:payload.shipTo.name,
@@ -176,7 +179,7 @@ var shippingId = vars.requestedShipping.id as String default "unknown"
 	<!-- Delete shipping by selected ID. -->
 	<sub-flow name="deleteShippingById" doc:id="69f4491c-943b-4da1-8f9c-6104c1317f25" >
 		<flow-ref doc:name="getShippingById" doc:id="f1981ad2-c4ff-4a59-8471-7c4c4fb10048" name="getShippingById" target="requestedShipping"/>
-		<db:delete doc:name="Delete selected shipping" doc:id="53abf382-3a11-41ad-a4ff-d45abd71e1a4" config-ref="SQL_Database_Config">
+		<db:delete doc:name="Delete selected shipping" doc:id="53abf382-3a11-41ad-a4ff-d45abd71e1a4" config-ref="${secure::db.config}">
 			<db:sql ><![CDATA[${file::sql/delete-shipping-by-id.sql}]]></db:sql>
 			<db:input-parameters ><![CDATA[#[%dw 2.0 output application/java
 

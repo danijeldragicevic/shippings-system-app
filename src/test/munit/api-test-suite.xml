@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:dbserver="http://www.mulesoft.org/schema/mule/dbserver" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="   http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd   http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd   http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd http://www.mulesoft.org/schema/mule/dbserver http://www.mulesoft.org/schema/mule/dbserver/current/mule-dbserver.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">	
+	<munit:config name="api-test-suite.xml" />
+	
+	<munit:test doc:id="fbf20e74-ad33-47c6-9776-8783e28ebb75" name="api-mainTest_Fail">
+		<munit:execution>
+			<munit:set-event doc:id="a5b0312f-2058-40fb-9eb0-650ec2e463db" doc:name="Set MULE:UNKNOWN error">
+				<munit:error exception="#[java!java::lang::Exception::new('unknown description')]" id="MULE:UNKNOWN"/>
+			</munit:set-event>
+			<try doc:id="15c551d4-3827-4cb0-addf-b3cf5e4088c1" doc:name="Try">
+				<flow-ref doc:id="36a5e468-a9b1-4647-b119-f74e9ee31e3b" doc:name="api-main" name="api-main"/>
+				<error-handler>
+					<on-error-continue doc:id="c76d5324-cf2a-4a47-bbe5-a56860744b78" doc:name="On Error Continue" enableNotifications="true" logException="true">
+						<ee:transform doc:id="30961aa1-2a82-4343-a322-df1aff7f12a6" doc:name="Catch error type and description">
+							<ee:message>
+								<ee:set-payload resource="dw/catch-error-type-and-description.dwl"/>
+							</ee:message>
+						</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorType]" doc:id="90b4cd17-36e6-4592-8261-b3bd01b3bcf6" doc:name="Error have expected type" expected="#[&quot;MULE:UNKNOWN&quot;]" message="#[&quot;Thrown error does not have expected type&quot;]"/>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorDescription]" doc:id="cd1b21bc-a43f-48a8-af42-4cd552513ed1" doc:name="Error have expected description" expected="#[&quot;unknown description&quot;]" message="#[&quot;Thrown error does not have expected description&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="9619846c-ab44-494c-acc4-887d2c45340f" name="api-consoleTest_Fail">
+		<munit:execution>
+			<munit:set-event doc:id="a8a5838b-780e-4e1e-9704-36bcd90b9fcd" doc:name="Set MULE:UNKNOWN error">
+				<munit:error exception="#[java!java::lang::Exception::new('unknown description')]" id="MULE:UNKNOWN"/>
+			</munit:set-event>
+			<try doc:id="9e4df5d5-3544-432a-bd39-e6176cee2417" doc:name="Try">
+				<flow-ref doc:id="12ae9c7f-c7dd-4ab6-93b7-581856326b84" doc:name="api-console" name="api-console"/>
+				<error-handler>
+					<on-error-continue doc:id="eb3e6f4d-a5ff-4f64-9098-4422d560c6c2" doc:name="On Error Continue" enableNotifications="true" logException="true">
+						<ee:transform doc:id="1a4ed81d-e2a4-4da9-8407-bdae89da2ab0" doc:name="Catch error type and description">
+							<ee:message>
+								<ee:set-payload resource="dw/catch-error-type-and-description.dwl"/>
+							</ee:message>
+						</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorType]" doc:id="a1368395-031a-4dc0-8712-4c4d0e89701e" doc:name="Error have expected type" expected="#[&quot;MULE:UNKNOWN&quot;]" message="#[&quot;Thrown error does not have expected type&quot;]"/>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorDescription]" doc:id="62d04546-a7de-4a2c-b0cd-970907eabc62" doc:name="Error have expected description" expected="#[&quot;unknown description&quot;]" message="#[&quot;Thrown error does not have expected description&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test description="Test" doc:id="5ea34d63-cc56-4c80-8f8c-bb4accaeb83a" name="get:\shippings:Test_Success">
+		<munit:behavior>
+			<munit-tools:mock-when doc:id="86b9fc7a-4c98-4ff2-a527-1e4cfeba62fb" doc:name="Mock when getShippings has been called" processor="flow-ref">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="17046fbf-1f4a-45fe-9f63-3960eebc5ae9"/>
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[{}]"/>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<flow-ref doc:id="0b9dc545-297c-495d-8b65-4fbc7e0a2b15" doc:name="get:\shippings:api-config" name="get:\shippings:api-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:id="31023b7c-4143-42ac-999e-c6a321a4340a" doc:name="Verify that getShippings has been called" processor="flow-ref" times="#[1]">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="17046fbf-1f4a-45fe-9f63-3960eebc5ae9"/>
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	
+	<munit:test description="Test" doc:id="84ec99a2-87ec-4945-ae93-79ed77f452dc" name="post:\shippings:Test_Success">
+		<munit:behavior>
+			<munit-tools:mock-when doc:id="83c64140-05e8-4daa-8af0-59f4c23f87a8" doc:name="Mock when createShippings has been called" processor="flow-ref">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="8f9c97e4-0c7e-42df-85e0-96f69e1ebac6"/>
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[{}]"/>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<flow-ref doc:id="36b5b5d1-463d-4aee-829f-138397aade9f" doc:name="post:\shippings:application\json:api-config" name="post:\shippings:application\json:api-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:id="78e28689-b41f-4423-a03d-13fb4827b16b" doc:name="Verify that createShippings has been called" processor="flow-ref" times="#[1]">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="8f9c97e4-0c7e-42df-85e0-96f69e1ebac6"/>
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="64107279-7dc3-4cd6-aa66-18701e440145" name="get:\shippings\(id):Test_Success">
+		<munit:behavior>
+			<munit-tools:mock-when doc:id="260e261d-309d-4691-a772-f0f81c9298e6" doc:name="Mock when getShippingById has been called" processor="flow-ref">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="c4238019-9a04-4aa3-874d-32a75bda10f6"/>
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[{}]"/>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<flow-ref doc:id="27371836-7a08-4261-b64e-9a24ea52d7b4" doc:name="get:\shippings\(id):api-config" name="get:\shippings\(id):api-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:id="24e8b3ba-eedd-48de-a6ec-85c395453104" doc:name="Verify that getShippingById has been called" processor="flow-ref" times="#[1]">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="c4238019-9a04-4aa3-874d-32a75bda10f6"/>
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="7d20d182-8ccf-4199-a95a-938e5a9d784f" name="put:\shippings\(id):Test_Success">
+		<munit:behavior>
+			<munit-tools:mock-when doc:id="f678ae86-ecad-4ada-9417-b261b07e0827" doc:name="Mock when updateShippingById has been called" processor="flow-ref">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="336149e0-af3a-48aa-b308-9954665ca519"/>
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<flow-ref doc:id="20f61353-68f6-4b6b-81d0-2995bda7fe34" doc:name="put:\shippings\(id):application\json:api-config" name="put:\shippings\(id):application\json:api-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:id="838d1a5c-7901-425b-9676-908f472c8b32" doc:name="Verify that updateShippingById has been called" processor="flow-ref" times="#[1]">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="336149e0-af3a-48aa-b308-9954665ca519"/>
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="6fc84d4c-4a01-4e17-9c4b-48a06fe62af6" name="delete:\shippings\(id):Test_Success">
+		<munit:behavior>
+			<munit-tools:mock-when doc:id="0efa2b0f-b719-4676-bc27-c69f3da727a9" doc:name="Mock when deleteShippingById has been called" processor="flow-ref">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="60790669-08cc-4596-b365-b8e8334cca24"/>
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<flow-ref doc:id="ee250015-f5e0-4bcf-95e3-5683a3b70e26" doc:name="delete:\shippings\(id):api-config" name="delete:\shippings\(id):api-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:id="dc240200-fdcf-42dd-8404-11609b5b724c" doc:name="Verify that deleteShippingById has been called" processor="flow-ref" times="#[1]">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="60790669-08cc-4596-b365-b8e8334cca24"/>
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+</mule>

@@ -3,7 +3,7 @@
     <http:listener-config name="api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
-    <apikit:config name="api-config" api="api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="api-config" api="api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" queryParamsStrictValidation="true"/>
     <flow name="api-main">
         <http:listener config-ref="api-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -30,19 +30,19 @@
         <apikit:console config-ref="api-config" />
         <error-handler ref="application-errors-handler" />
     </flow>
-    <flow name="get:\shippings:api-config">
+    <flow name="get:\shippings:api-config" doc:id="ee933570-4b51-41e5-9b82-26c973389e0f">
         <flow-ref doc:name="getShippings" doc:id="17046fbf-1f4a-45fe-9f63-3960eebc5ae9" name="getShippings" />
     </flow>
-    <flow name="post:\shippings:application\json:api-config">
+    <flow name="post:\shippings:application\json:api-config" doc:id="bf661dfd-95b0-4576-83fb-b750d7ddf313">
         <flow-ref doc:name="createShipping" doc:id="8f9c97e4-0c7e-42df-85e0-96f69e1ebac6" name="createShipping" />
     </flow>
-	<flow name="get:\shippings\(id):api-config">
+	<flow name="get:\shippings\(id):api-config" doc:id="a883f343-bd7f-4c97-a3cc-637cc42d42e0">
         <flow-ref doc:name="getShippingById" doc:id="c4238019-9a04-4aa3-874d-32a75bda10f6" name="getShippingById" />
     </flow>
-    <flow name="put:\shippings\(id):application\json:api-config">
+    <flow name="put:\shippings\(id):application\json:api-config" doc:id="996b2244-1315-4c4f-9fc5-d2a523350991">
 		<flow-ref doc:name="updateShippingById" doc:id="336149e0-af3a-48aa-b308-9954665ca519" name="updateShippingById"/>
     </flow>
-    <flow name="delete:\shippings\(id):api-config">
+    <flow name="delete:\shippings\(id):api-config" doc:id="6d179f5c-dd47-4be7-9692-9f30dbbae4df">
 		<flow-ref doc:name="deleteShippingById" doc:id="60790669-08cc-4596-b365-b8e8334cca24" name="deleteShippingById"/>
     </flow>
 </mule>

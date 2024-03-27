@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:dbserver="http://www.mulesoft.org/schema/mule/dbserver" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="   http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd   http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd   http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd http://www.mulesoft.org/schema/mule/dbserver http://www.mulesoft.org/schema/mule/dbserver/current/mule-dbserver.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<munit:config name="implementation-test-suite.xml"/>
+	
+	<dbserver:config doc:id="c2e7e01c-e881-4ffa-be24-783a55e25cc1" doc:name="MUnit DB Server Config" name="MUnit_DB_Server_Config">
+		<dbserver:connection connectionStringParameters="MODE=MySQL" database="${secure::db.database}" sqlFile="sql/init-h2db.sql"/>
+	</dbserver:config>
+	
+	<db:config doc:id="f60a6e9f-5613-42c9-b05c-4514103ecbb3" doc:name="Database Config" name="Test_Database_Config">
+		<db:generic-connection driverClassName="org.h2.Driver" url="jdbc:h2:tcp://${secure::db.host}/mem:${secure::db.database}"/>
+	</db:config>
+	
+	<munit:test description="Test" doc:id="c3074a9a-8375-4a7b-97ba-2be2014ceb34" name="getShippingsTest_Success">
+		<munit:execution>
+			<flow-ref doc:id="db14de07-522d-4060-949f-f7b217aa2e05" doc:name="getShippings" name="getShippings"/>
+		</munit:execution>
+		<munit:validation>
+			<flow-ref doc:id="2d60153d-a78a-407a-bd79-fc19c916097f" doc:name="payloadIsJsonArray" name="payloadIsJsonArray"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test description="Test" doc:id="c7a34b16-f330-41f6-be41-f87c17229ea7" name="getShippingsWithEqualsQueryParamTest_Success">
+		<munit:execution>
+			<munit:set-event doc:id="7bba0ee1-d708-425d-9000-c878b8ecf2f1" doc:name="Set queryParams (name, equals)">
+				<munit:attributes value="#[{&#10; &quot;queryParams&quot;: {&#10;  &quot;name&quot;: &quot;Jerry Seinfield&quot;,&#10;  &quot;match&quot;: &quot;equals&quot;&#10; }&#10;}]"/>
+			</munit:set-event>
+			<flow-ref doc:id="360bff1f-52ff-4160-9609-70b3aa9c1196" doc:name="getShippings" name="getShippings"/>
+		</munit:execution>
+		<munit:validation>
+			<flow-ref doc:id="797198bc-60a2-458b-b900-85208cdcc46f" doc:name="payloadIsJsonArray" name="payloadIsJsonArray"/>
+			<munit-tools:assert-equals actual="#[sizeOf(payload)]" doc:id="4de958d3-8617-4999-a4ac-20940679122d" doc:name="Payload size as expected" expected="#[1]" message="#[&quot;Payload size is not as expected!&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test description="Test" doc:id="fcd85e3f-36d2-4528-aca3-35906d4b78ab" name="getShippingsWithLikeQueryParamTest_Success">
+		<munit:execution>
+			<munit:set-event doc:id="244ea834-30cb-4f1d-89ca-5c8a4383826d" doc:name="Set queryParams (name, like)">
+				<munit:attributes value="#[{&#10; &quot;queryParams&quot;: {&#10;  &quot;name&quot;: &quot;Jerry&quot;,&#10;  &quot;match&quot;: &quot;like&quot;&#10; }&#10;}]"/>
+			</munit:set-event>
+			<flow-ref doc:id="975674b8-033d-4367-a649-f0065b33a961" doc:name="getShippings" name="getShippings"/>
+		</munit:execution>
+		<munit:validation>
+			<flow-ref doc:id="bdc99e05-4ee7-4d60-8207-fae1598befc3" doc:name="payloadIsJsonArray" name="payloadIsJsonArray"/>
+			<munit-tools:assert-equals actual="#[sizeOf(payload)]" doc:id="94e1a909-427a-4d18-9bcc-f046adb785c1" doc:name="Payload size as expected" expected="#[2]" message="#[&quot;Payload size is not as expected!&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test description="Test" doc:id="38a88e85-1587-4190-bb5b-16258ec0ca98" name="getShippingsWithUnknownQueryParamTest_Success">
+		<munit:execution>
+			<munit:set-event doc:id="64656d67-6eaa-486b-b489-6ba742496e9a" doc:name="Set queryParams (name, like)">
+				<munit:attributes value="#[{&#10; &quot;queryParams&quot;: {&#10;  &quot;name&quot;: &quot;Unknown&quot;,&#10;  &quot;match&quot;: &quot;like&quot;&#10; }&#10;}]"/>
+			</munit:set-event>
+			<flow-ref doc:id="8328d674-1b44-4e16-b63d-a8998123e25a" doc:name="getShippings" name="getShippings"/>
+		</munit:execution>
+		<munit:validation>
+			<flow-ref doc:id="c5802544-4b75-4ef3-82bf-f20a542ad6c6" doc:name="payloadIsJsonArray" name="payloadIsJsonArray"/>
+			<munit-tools:assert-equals actual="#[sizeOf(payload)]" doc:id="91636e97-83e4-4f00-a8d1-93f5d47d4d1a" doc:name="Payload size as expected" expected="#[0]" message="#[&quot;Payload size is not as expected!&quot;]"/>			
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="1e7656c1-d229-4103-af5b-ed4398af964a" name="createShippingTest_Success">
+		<munit:execution>
+			<munit:set-event doc:id="8cab69a4-29c7-4a26-b12e-67b5c16f34b4" doc:name="Set payload">
+				<munit:payload value="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  shipTo: {&#10;    userId: 3,&#10;    name: &quot;George Costanza&quot;,&#10;    email: &quot;george.costanza@comedyshow.com&quot;,&#10;    phone: &quot;(212) 555-1234&quot;&#10;  },&#10;  billingAddress: {&#10;    street: &quot;1344 Queens Boulevard&quot;,&#10;    city: &quot;New York City&quot;,&#10;    state: &quot;New York State&quot;,&#10;    postalCode: &quot;10024&quot;,&#10;    country: &quot;United States&quot;&#10;  },&#10;  shippingAddress: {&#10;    street: &quot;1344 Queens Boulevard&quot;,&#10;    city: &quot;New York City&quot;,&#10;    state: &quot;New York State&quot;,&#10;    postalCode: &quot;10024&quot;,&#10;    country: &quot;United States&quot;&#10;  }&#10;}]"/>
+			</munit:set-event>
+			<flow-ref doc:id="51418e1b-eab5-468f-9612-988b3fcc9633" doc:name="createShipping" name="createShipping"/>
+		</munit:execution>
+		<munit:validation>
+			<flow-ref doc:id="ecf1bb0c-999f-4b35-b10a-1de6b7cba63c" doc:name="payloadIsJsonObject" name="payloadIsJsonObject"/>
+			<munit-tools:assert-equals actual="#[payload.status]" doc:id="94eff6d2-97ef-41da-bae1-f69fd5af6048" doc:name="Payload status as expected" expected="#[&quot;Shipping successfully created&quot;]" message="#[&quot;Payload status attribute does not have expected value!&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="dc699f63-a72b-4707-8144-c1f2d87cc2fd" name="createShippingTest_Fail">
+		<munit:behavior>
+			<munit-tools:mock-when doc:id="ccb8f1c1-b103-4c99-97bc-e007b43721d7" doc:name="Mock when database has been called" processor="db:insert">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="90cf50e3-54cd-48fa-b78b-0c0a1cfab70e"/>
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[%dw 2.0 output application/json --- {affectedRows: 0}]"/>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:id="71747d56-13c7-407c-a264-951251d62552" doc:name="Set payload">
+				<munit:payload value="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  shipTo: {&#10;    userId: 3,&#10;    name: &quot;George Costanza&quot;,&#10;    email: &quot;george.costanza@comedyshow.com&quot;,&#10;    phone: &quot;(212) 555-1234&quot;&#10;  },&#10;  billingAddress: {&#10;    street: &quot;1344 Queens Boulevard&quot;,&#10;    city: &quot;New York City&quot;,&#10;    state: &quot;New York State&quot;,&#10;    postalCode: &quot;10024&quot;,&#10;    country: &quot;United States&quot;&#10;  },&#10;  shippingAddress: {&#10;    street: &quot;1344 Queens Boulevard&quot;,&#10;    city: &quot;New York City&quot;,&#10;    state: &quot;New York State&quot;,&#10;    postalCode: &quot;10024&quot;,&#10;    country: &quot;United States&quot;&#10;  }&#10;}]"/>
+			</munit:set-event>
+			<try doc:id="80509122-81ac-4231-a24d-91ffe4af76ab" doc:name="Try">
+				<flow-ref doc:id="4e9031bc-d2b4-4326-96e1-5e5799d7f064" doc:name="createShipping" name="createShipping"/>
+				<error-handler>
+					<on-error-continue doc:id="6790730d-2034-4578-be4c-8aa54c0232e6" doc:name="On Error Continue" enableNotifications="true" logException="true">
+						<ee:transform doc:id="6656f3d0-15a7-472e-98c4-bd18e2449853" doc:name="Catch error type and description">
+							<ee:message>
+								<ee:set-payload resource="dw/catch-error-type-and-description.dwl"/>
+							</ee:message>
+						</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorType]" doc:id="da2f79d5-c22c-436f-8fd3-86f497f9002b" doc:name="Error have expected type" expected="#[&quot;APP:SERVER_ERROR&quot;]" message="#[&quot;Thrown error does not have expected type&quot;]"/>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorDescription]" doc:id="9cef3cec-7d41-4f5b-b2a9-331b89595661" doc:name="Error have expected description" expected="#[&quot;Shipping was not created. Please check the logs.&quot;]" message="#[&quot;Thrown error does not have expected description&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="164b0f65-fd49-4e7d-b9d1-7d5e76aadaff" name="getShippingByIdTest_Success">
+		<munit:execution>
+			<munit:set-event doc:id="23f01ddd-a3f3-4e58-af91-fa6674d3c534" doc:name="Set uriParams.id">
+				<munit:attributes value="#[{&#10; &quot;uriParams&quot;: {&#10;  &quot;id&quot;: 1 &#10; }&#10;}]"/>
+			</munit:set-event>
+			<flow-ref doc:id="82d04ea8-f8cb-477d-9fa0-c85b477753ce" doc:name="getShippingById" name="getShippingById"/>
+		</munit:execution>
+		<munit:validation>
+			<flow-ref doc:id="c9b886a2-67bc-4ba2-950c-be0a65dc4b81" doc:name="payloadIsJsonObject" name="payloadIsJsonObject"/>
+			<munit-tools:assert-equals actual="#[payload.id]" doc:id="e3243ab0-5947-49ee-bea2-64c8c9c37d05" doc:name="Payload shippingId as expected" expected="#[1]" message="#[&quot;Payload.id attribute does not have expected value!&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="a89179c7-7393-4a7f-b9c0-21e72728375c" name="getShippingByIdTest_Fail">
+		<munit:behavior>
+			<munit-tools:mock-when doc:id="c0bd2c72-1eb9-47d3-b2f3-15cdee9ec3ef" doc:name="Mock when database has been called" processor="db:query-single">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="4b95705e-299c-4421-8a09-ace81fd9431e"/>
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[{}]"/>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:id="9f39a765-8ae1-4d41-a593-40a050f4429a" doc:name="Set uriParams.id">
+				<munit:attributes value="#[{&#10; &quot;uriParams&quot;: {&#10;  &quot;id&quot;: 1 &#10; }&#10;}]"/>
+			</munit:set-event>
+			<try doc:id="8f1743e0-04d0-4aca-aacf-6391ad697723" doc:name="Try">
+				<flow-ref doc:id="e991ebe6-679e-476a-b84b-d1927cd8e03c" doc:name="getShippingById" name="getShippingById"/>
+				<error-handler>
+					<on-error-continue doc:id="120e6e6a-2e5f-4c4f-8e0e-315f63b20c88" doc:name="On Error Continue" enableNotifications="true" logException="true">
+						<ee:transform doc:id="31fec784-3536-44e9-916d-88231fab911f" doc:name="Catch error type and description">
+							<ee:message>
+								<ee:set-payload resource="dw/catch-error-type-and-description.dwl"/>
+							</ee:message>
+						</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorType]" doc:id="f7e11559-6943-443f-bb21-aaa8b1f923e8" doc:name="Error have expected type" expected="#[&quot;APP:NOT_FOUND&quot;]" message="#[&quot;Thrown error does not have expected type&quot;]"/>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorDescription]" doc:id="533cf59e-51c4-4d1f-bf20-d7649b8166df" doc:name="Error have expected description" expected="#[&quot;Shipping was not found!&quot;]" message="#[&quot;Thrown error does not have expected description&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="9ebac25c-8d35-425e-978b-adf558d31045" name="updateShippingByIdTest_Success">
+		<munit:execution>
+			<munit:set-event doc:id="86ae80f0-bd6b-41c2-926c-8ff1201c96fc" doc:name="Set uriParam and payload">
+				<munit:payload value="#[%dw 2.0&#10;output application/json&#10;---&#10;// Change shippingAddress values, for the already existing record&#10;{&#10;  &quot;shipTo&quot;: {&#10;    &quot;userId&quot;: 1,&#10;    &quot;name&quot;: &quot;Jerry Seinfield&quot;,&#10;    &quot;email&quot;: &quot;jerry.seinfield@comedyshow.com&quot;,&#10;    &quot;phone&quot;: &quot;(212) 555-1234&quot;&#10;  },&#10;  &quot;billingAddress&quot;: {&#10;    &quot;street&quot;: &quot;129 West 81st Street&quot;,&#10;    &quot;city&quot;: &quot;New York City&quot;,&#10;    &quot;state&quot;: &quot;New York State&quot;,&#10;    &quot;postalCode&quot;: &quot;10024&quot;,&#10;    &quot;country&quot;: &quot;United States&quot;&#10;  },&#10;  &quot;shippingAddress&quot;: {&#10;    &quot;street&quot;: &quot;CHANGED 129 West 81st Street&quot;,&#10;    &quot;city&quot;: &quot;CHANGED New York City&quot;,&#10;    &quot;state&quot;: &quot;CHANGED New York State&quot;,&#10;    &quot;postalCode&quot;: &quot;CHANGED 10024&quot;,&#10;    &quot;country&quot;: &quot;CHANGED United States&quot;&#10;  }&#10;}]"/>
+				<munit:attributes value="#[{&#10; &quot;uriParams&quot;: {&#10;  &quot;id&quot;: 1 &#10; }&#10;}]"/>
+			</munit:set-event>
+			<flow-ref doc:id="5f9a7e11-2149-4549-8654-0aa789e3e306" doc:name="updateShippingById" name="updateShippingById"/>
+		</munit:execution>
+		<munit:validation>
+			<flow-ref doc:id="ab629016-2f5a-42d0-9c88-5c3832e84020" doc:name="payloadIsJsonObject" name="payloadIsJsonObject"/>
+			<munit-tools:assert-equals actual="#[payload.status]" doc:id="67516b3a-8b2d-4269-b05a-744b1767309d" doc:name="Payload status as expected" expected="#[&quot;Shipping successfully updated&quot;]" message="#[&quot;Payload status attribute does not have expected value!&quot;]"/>
+			<munit-tools:assert-equals actual="#[payload.shippingId]" doc:id="4bfe77a4-8282-453f-a8cf-bdb74c819a28" doc:name="Payload shippingId as expected" expected="#[&quot;1&quot;]" message="#[&quot;Payload shippingId attribute does not have expected value!&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="e32230f6-51af-49de-b9d3-36a076af9335" name="updateShippingByIdTest_Fail">
+		<munit:behavior>
+			<munit-tools:mock-when doc:id="0b6a278b-7851-4439-abdf-748f67b86c78" doc:name="Mock when database has been called" processor="db:update">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="9953aea0-b14a-44b1-ade8-3ba54b712f1b"/>
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[%dw 2.0 output application/json --- {affectedRows: 0}]"/>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:id="ad595a88-5ee8-4b79-a24a-b09df524379c" doc:name="Set uriParam and payload">
+				<munit:payload value="#[%dw 2.0&#10;output application/json&#10;---&#10;// Change shippingAddress values, for the already existing record&#10;{&#10;  &quot;shipTo&quot;: {&#10;    &quot;userId&quot;: 1,&#10;    &quot;name&quot;: &quot;Jerry Seinfield&quot;,&#10;    &quot;email&quot;: &quot;jerry.seinfield@comedyshow.com&quot;,&#10;    &quot;phone&quot;: &quot;(212) 555-1234&quot;&#10;  },&#10;  &quot;billingAddress&quot;: {&#10;    &quot;street&quot;: &quot;129 West 81st Street&quot;,&#10;    &quot;city&quot;: &quot;New York City&quot;,&#10;    &quot;state&quot;: &quot;New York State&quot;,&#10;    &quot;postalCode&quot;: &quot;10024&quot;,&#10;    &quot;country&quot;: &quot;United States&quot;&#10;  },&#10;  &quot;shippingAddress&quot;: {&#10;    &quot;street&quot;: &quot;CHANGED 129 West 81st Street&quot;,&#10;    &quot;city&quot;: &quot;CHANGED New York City&quot;,&#10;    &quot;state&quot;: &quot;CHANGED New York State&quot;,&#10;    &quot;postalCode&quot;: &quot;CHANGED 10024&quot;,&#10;    &quot;country&quot;: &quot;CHANGED United States&quot;&#10;  }&#10;}]"/>
+				<munit:attributes value="#[{&#10; &quot;uriParams&quot;: {&#10;  &quot;id&quot;: 1 &#10; }&#10;}]"/>
+			</munit:set-event>
+			<try doc:id="d47a02ba-6e7d-473e-9610-cd4ae6108cec" doc:name="Try">
+				<flow-ref doc:id="5316adb9-9f9d-457a-805c-b0df14e399f3" doc:name="updateShippingById" name="updateShippingById"/>
+				<error-handler>
+					<on-error-continue doc:id="b0f1fadf-c246-4d48-8c7c-43a805595e23" doc:name="On Error Continue" enableNotifications="true" logException="true">
+						<ee:transform doc:id="93131e77-d7e2-47be-b717-23436e966ab5" doc:name="Catch error type and description">
+							<ee:message>
+								<ee:set-payload resource="dw/catch-error-type-and-description.dwl"/>
+							</ee:message>
+						</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorType]" doc:id="319d4a25-f141-45f8-95d4-8d5a56e34ff3" doc:name="Error have expected type" expected="#[&quot;APP:SERVER_ERROR&quot;]" message="#[&quot;Thrown error does not have expected type&quot;]"/>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorDescription]" doc:id="41cafbb2-f658-4d64-b412-e23c992727c1" doc:name="Error have expected description" expected="#[&quot;Shipping was not updated. Please check the logs.&quot;]" message="#[&quot;Thrown error does not have expected description&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="b78da27f-c712-4f98-9eb3-ebbda908b9de" name="deleteShippingByIdTest_Success">
+		<munit:execution>
+			<munit:set-event doc:id="d81a9788-1b21-4630-902a-ea100c66c309" doc:name="Set uriParams.id">
+				<munit:attributes value="#[{&#10; &quot;uriParams&quot;: {&#10;  &quot;id&quot;: 3 &#10; }&#10;}]"/>
+			</munit:set-event>
+			<flow-ref doc:id="bd4a37d3-ab19-4705-b879-0cf067c2f862" doc:name="deleteShippingById" name="deleteShippingById"/>
+		</munit:execution>
+		<munit:validation>
+			<flow-ref doc:id="018c607b-af57-4cc2-b728-75b4569a8602" doc:name="payloadIsJsonObject" name="payloadIsJsonObject"/>
+			<munit-tools:assert-equals actual="#[payload.status]" doc:id="1bf408c4-d968-4164-848a-602cd9874670" doc:name="Payload status as expected" expected="#[&quot;Shipping successfully deleted&quot;]" message="#[&quot;Payload status attribute does not have expected value!&quot;]"/>
+			<munit-tools:assert-equals actual="#[payload.shippingId]" doc:id="548bc247-6f30-4b54-b46d-e76cd0b9f571" doc:name="Payload shippingId as expected" expected="#[&quot;3&quot;]" message="#[&quot;Payload shippingId attribute does not have expected value!&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test doc:id="6d5059c6-ca79-448f-84b8-d8eba6208a66" name="deleteShippingByIdTest_Fail">
+		<munit:behavior>
+			<munit-tools:mock-when doc:id="9071de1c-b404-41ca-8316-581619c7c758" doc:name="Mock when database has been called" processor="db:delete">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="53abf382-3a11-41ad-a4ff-d45abd71e1a4"/>
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[%dw 2.0 output application/java --- 0]"/>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:id="79fc1079-3269-49c1-9f10-40f856fcba66" doc:name="Set uriParams.id">
+				<munit:attributes value="#[{&#10; &quot;uriParams&quot;: {&#10;  &quot;id&quot;: 4 &#10; }&#10;}]"/>
+			</munit:set-event>
+			<try doc:id="a097b746-9b87-423e-b110-db868e373160" doc:name="Try">
+				<flow-ref doc:id="9c159f6a-e381-43d7-b15b-1f8b5bdf715f" doc:name="deleteShippingById" name="deleteShippingById"/>
+				<error-handler>
+					<on-error-continue doc:id="d6592bc4-6fba-48e3-8064-73f043cc118b" doc:name="On Error Continue" enableNotifications="true" logException="true">
+						<ee:transform doc:id="af25320b-e5b3-4f73-af87-b38a6a7b808d" doc:name="Catch error type and description">
+							<ee:message>
+								<ee:set-payload resource="dw/catch-error-type-and-description.dwl"/>
+							</ee:message>
+						</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorType]" doc:id="9a971b44-89b6-423d-8760-98b59745baf1" doc:name="Error have expected type" expected="#[&quot;APP:SERVER_ERROR&quot;]" message="#[&quot;Thrown error does not have expected type&quot;]"/>
+			<munit-tools:assert-equals actual="#[%dw 2.0 output application/java --- payload.thrownErrorDescription]" doc:id="e17671cf-d063-49e0-99e7-088b31485deb" doc:name="Error have expected description" expected="#[&quot;Shipping was not deleted. Please check the logs.&quot;]" message="#[&quot;Thrown error does not have expected description&quot;]"/>
+		</munit:validation>
+	</munit:test>
+	<sub-flow doc:id="777f4a73-c7c4-4ab2-a58c-9df3813c1963" name="payloadIsJsonArray">
+		<munit-tools:assert-that doc:id="79b0d6ef-4578-4c44-81c1-ab4c0c3f9c54" doc:name="Payload is not null" expression="#[payload]" is="#[MunitTools::notNullValue()]" message="#[&quot;Payload is empty&quot;]"/>
+		<munit-tools:assert-that doc:id="6850ac9f-c865-4196-b84f-d26dc29e9d3c" doc:name="Payload is JSON dataType" expression="#[payload]" is="#[MunitTools::withMediaType('application/json')]" message="#[&quot;Payload is not JSON&quot;]"/>
+		<munit-tools:assert-equals actual="#[output application/java --- (typeOf(payload) as String) == &quot;Array&quot;]" doc:id="fdefa233-2899-4112-aa28-c060a94bc804" doc:name="Payload is Array" expected="#[true]" message="#[&quot;Payload is not Array&quot;]"/>
+	</sub-flow>
+	<sub-flow doc:id="be7312c0-bd87-4d4c-8206-278cad5691d8" name="payloadIsJsonObject">
+		<munit-tools:assert-that doc:id="f8edebcc-09d3-4c90-9100-e35bed6c9f52" doc:name="Payload is not null" expression="#[payload]" is="#[MunitTools::notNullValue()]" message="#[&quot;Payload is empty&quot;]"/>
+		<munit-tools:assert-that doc:id="50306807-a337-43e9-b202-3fc87c2d1a99" doc:name="Payload is JSON dataType" expression="#[payload]" is="#[MunitTools::withMediaType('application/json')]" message="#[&quot;Payload is not JSON&quot;]"/>
+		<munit-tools:assert-equals actual="#[output application/java --- (typeOf(payload) as String) == &quot;Object&quot;]" doc:id="863b8c3c-6362-4299-b2f7-01d5e8202014" doc:name="Payload is Object" expected="#[true]" message="#[&quot;Payload is not Object&quot;]"/>
+	</sub-flow>
+</mule>

@@ -1,22 +1,22 @@
 %dw 2.0 
 output applicaiton/java
 
-var params = attributes.queryParams
+var qparams = attributes.queryParams
 
 ---
 /*
- * Build WHERE clause that's gonna be used in the SELECT query.
+ * Build WHERE clause for the `SELECT * FROM shippings WHERE...` query.
  * 
  * Input attributes:
- * - params.name (String): User's name;
- * - params.match (["like", "equals"]): Matching attribute;
+ * - qparams.name (String): User's name;
+ * - qparams.match (["like", "equals"]): Matching attribute;
  * 
- * Returns: String or null.
+ * Returns: String.
  * */
-if (not isBlank(params.name)) (
-    params.match match {
-        case "like" -> " WHERE userNAme LIKE '%" ++ params.name ++ "%';"
-        else -> " WHERE userName = '" ++ params.name ++ "';"
+if (not isBlank(qparams.name)) (
+    qparams.match match {
+        case "like" -> " WHERE userNAme LIKE '%" ++ qparams.name ++ "%'"
+        else -> " WHERE userName = '" ++ qparams.name ++ "'"
     }
 ) else (
     ""

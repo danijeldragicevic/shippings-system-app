@@ -7,7 +7,7 @@
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 
 		<!-- 
-		This is the place where all Exceptions are defined.
+		This is the place where all Exceptions are caught.
 		Resulting payload for all exceptions is defined in src/main/resources/dw/build-error-response.dwl script.
 		-->
 		<error-handler name="application-errors-handler" doc:id="bc59f28a-ead9-4924-a593-c60c60c338ad" >
