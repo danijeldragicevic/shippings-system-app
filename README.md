@@ -22,7 +22,7 @@ In order to achieve that, please follow instructions on this link: https://docs.
 
 Also, application is developed to load property files based on the development environment. <br>
 To be able to run the application, you have to provide environemnt information, together with the encruption key:
-- VM argumens to run the application are: -Dmule-env=dev -Dencryption.key=YOUR_KEY_HERE <br>
+- VM argumens to run the application are: -M-Dmule-env=dev -M-Dencryption.key=YOUR_KEY_HERE <br>
 - VM argumens to run the MUnit tests are: -Dmule-env=qa -Dencryption.key=YOUR_KEY_HERE <br>
 If you need some help, please follow instructions on this link: https://docs.mulesoft.com/mule-runtime/latest/deploying-to-multiple-environments
 
@@ -34,13 +34,13 @@ The easiest way to run the application is to download [lstest Anypoint Studio](h
 If you don't want to download and import into the Anypoint Studio, you can run the application using the mule CLI. <br>
 Here are the instructions how to configure Mule Standalone Runtime on your machine and run the application: https://docs.mulesoft.com/mule-runtime/latest/mule-standalone
 
-# How to test the application
+# Exposed endpoints
 By default, application will run on **http://localhost:8081** <br/>
 Following endpoints will be exposed:
 
 | Methods | Urls                                          | Actions                                                    |
 |---------|-----------------------------------------------|------------------------------------------------------------|
-| GET     | /shippings/console                            | Opens generated documentation                              |
+| GET     | /shippings/console                            | API Console, opens generated documentation                 |
 |         |                                               |                                                            |
 | GET     | /api/shippings                                | Retrieve all shippings.                                    |
 | GET     | /api/shippings?name=[keyword]&match=[keyword] | Retrieve all shippings using the optional query parameters |
@@ -50,9 +50,18 @@ Following endpoints will be exposed:
 | PUT     | /api/shippings/{id}                           | Update shipping specified by it's unique ID                |
 | DELETE  | /api/shippings/{id}                           | Delete shipping specified by it's unique ID                |
 
+# How to test the application
+To test the appliactions endpoints you can use API Console. <br>
+Provides intuitive way to see what data endpoints are expecting, so as what are they returning. <br>
 
+![api-console](https://github.com/danijeldragicevic/shippings-system-app/assets/82412662/9cad48b2-8b5d-4bf6-85f0-14980052f5a7)
 
+<br>
 
+Feel free to explore the application and use the provided examples to understand how to interact with each endpoint. If you have any questions or issues, please refer to the API documentation or contact the application maintainers.
+
+# Licence
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 
 
