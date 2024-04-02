@@ -6,10 +6,6 @@
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd 
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 	
-	<!-- 
-	<configuration-properties file="muleapp/config/${mule-env}.properties" />
-	 -->
-	
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" 
 		key="${encryption.key}" 
 		file="muleapp/config/${mule-env}.properties" >
