@@ -17,21 +17,21 @@ Please refer to the [blog post](https://example.com) for insights into the conce
 ## 1. Provide database credentials and VM arguments
 
 Applicaiton connects to the remote database by using the secured credentials. <br>
-To be able to run the application you have to provide your own credentials (host, port, username, password, database name) and encrypt them. <br>
+To be able to run the application you have to provide your own credentials (host, port, username, password) and encrypt them. <br>
 In order to achieve that, please follow instructions on this link: https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties
 
-Also, application is developed to load property files based on the development environment. <br>
-To be able to run the application, you have to provide environemnt information, together with the encruption key:
+Application is developed to load property files based on the development environment you are working on. <br>
+To be able to run the application, you have to provide environemnt information and encryption key:
 - VM argumens to run the application are: -M-Dmule-env=dev -M-Dencryption.key=YOUR_KEY_HERE <br>
 - VM argumens to run the MUnit tests are: -Dmule-env=qa -Dencryption.key=YOUR_KEY_HERE <br>
 If you need some help, please follow instructions on this link: https://docs.mulesoft.com/mule-runtime/latest/deploying-to-multiple-environments
 
 ## 2. Run on Embeded Mule Runtime
 Application is developed using the Anypoint Studio 7.17, with it's embedded Maven and JDK. <br>
-The easiest way to run the application is to download [lstest Anypoint Studio](https://www.mulesoft.com/lp/dl/anypoint-mule-studio) and import application as "Anypoint Studio project from File System".
+The easiest way to run the application is to download [Anypoint Studio](https://www.mulesoft.com/lp/dl/anypoint-mule-studio) and import application as "Anypoint Studio project from File System".
 
 ## 3. Run on Mule Standalone Runtime
-If you don't want to download and import into the Anypoint Studio, you can run the application using the mule CLI. <br>
+If you don't want to use Anypoint Studio, you can run the application using the mule CLI. <br>
 Here are the instructions how to configure Mule Standalone Runtime on your machine and run the application: https://docs.mulesoft.com/mule-runtime/latest/mule-standalone
 
 # Exposed endpoints
