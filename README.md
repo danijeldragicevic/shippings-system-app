@@ -2,10 +2,6 @@
 
 Welcome to the Shippings System App! <br>
 
-# Demo Disclaimer
-This application is a demo created for educational purposes and is associated with a blog post. It is not representing a fully functional or production-ready system. 
-Please refer to the [blog post](https://example.com) for insights into the concepts and use cases demonstrated.
-
 # Technology
 - Mule 4.6.1 EE
 - MySQL database
